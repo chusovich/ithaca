@@ -1,0 +1,2 @@
+# odysseus
+laptop nixos-config
