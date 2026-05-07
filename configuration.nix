@@ -67,12 +67,15 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+  # VM Ware
+  virtualisation.vmware.host.enable = true;
+
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
   # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.displayManager.gdm.enable = true;
+  services.desktopManager.gnome.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -94,9 +97,7 @@
     # If you want to use JACK applications, uncomment this
     #jack.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
+    # wireplumber is the default session manager
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -106,7 +107,7 @@
   users.users.calebh = {
     isNormalUser = true;
     description = "Caleb Husovich";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "dialout" ]; # dialout for usb access?
     packages = with pkgs; [
       firefox
       git
@@ -115,6 +116,9 @@
       just
       mqtt-explorer
       vscodium
+      remmina # RDP
+      opencode
+      chromium
     ];
   };
 
@@ -143,7 +147,35 @@
     enable = true;
     settings = {
       PasswordAuthentication = true;
-      PermitRootLogin = "yes";
+      PermitRootLogin = "no";
+    };
+  };
+
+  # Syncthing
+  services.syncthing = {
+    enable = true;
+    user = "calebh";
+    group = "users";
+    overrideDevices = true;
+    overrideFolders = true;
+    configDir = "/home/calebh/.config/syncthing";
+    openDefaultPorts = true; # Open ports in the firewall for Syncthing. (NOTE: this will not open syncthing gui port)
+    settings = {
+      devices = {
+        "Calebs iPhone" = {  # Name of SyncThing instance on other machine
+          id = "UH64EDS-NICSPMJ-BLACE4P-J7YOGVI-7TQ2BCV-EILNBEC-QCRCIR5-XH25SAC"; # Elided for privacy
+        };
+      };
+
+      folders = {
+        "obsidian" = {
+          label = "Obsidian";
+          path = "/home/calebh/syncthing/obsidian";
+          devices = [
+            "Calebs iPhone"
+          ];
+        };
+      };
     };
   };
 

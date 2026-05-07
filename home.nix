@@ -13,6 +13,21 @@
   home.username = "calebh";
   home.homeDirectory = "/home/calebh";
 
+  # Helix
+  programs.helix = {
+    enable = true;
+
+    settings = {
+      theme = "onedark";
+
+      keys.insert = {
+        "j" = {
+          "k" = "normal_mode";
+        };
+      };
+    };
+  };
+
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
   # when a new home Manager release introduces backwards
