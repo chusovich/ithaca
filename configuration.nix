@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, pkgs-unstable, inputs, ... }:
 
 {
   imports =
@@ -82,13 +82,15 @@
     packages = with pkgs; [
       firefox
       git
-      obsidian
-      freecad
       just
       vscodium
-      opencode
       chromium
-      mcp-nixos
+      freecad
+    ] ++ (with pkgs-unstable; [
+      obsidian
+    ]) ++ [
+      inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+      inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos
     ];
   };
 
