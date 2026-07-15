@@ -25,47 +25,18 @@
   boot.loader.systemd-boot.configurationLimit = 10;
   # boot.loader.grub.configurationLimit = 10;
 
-  # Perform garbage collection weekly to maintain low disk usage
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-
-  # Optimize storage
-  # You can also manually optimize the store via:
-  #    nix-store --optimise
-  # Refer to the following link for more details:
-  # https://nixos.org/manual/nix/stable/command-ref/conf-file.html#conf-auto-optimise-store
-  nix.settings.auto-optimise-store = true;
-  
   # Tailscale 
   services.tailscale.enable = true;
 
   # Set hostname
   networking.hostName = "odysseus";
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Enable networking
   networking.networkmanager.enable = true;
 
   # Set your time zone.
   time.timeZone = "America/New_York";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
 
   # VM Ware
   virtualisation.vmware.host.enable = true;
@@ -114,11 +85,10 @@
       obsidian
       freecad
       just
-      mqtt-explorer
       vscodium
-      remmina # RDP
       opencode
       chromium
+      mcp-nixos
     ];
   };
 
