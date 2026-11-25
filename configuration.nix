@@ -10,6 +10,9 @@
       ./hardware-configuration.nix
     ];
 
+  nix.settings.extra-substituters = [ "https://nixos-raspberrypi.cachix.org" ];
+  nix.settings.extra-trusted-public-keys = [ "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI=" ];
+
   # Enable Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];  
 
@@ -71,8 +74,13 @@
     # wireplumber is the default session manager
   };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+  programs.steam = {
+    enable = true;
+  };
+
+# Optional: If you encounter amdgpu issues with newer kernels (e.g., 6.10+ reported issues),
+# you might consider using the LTS kernel or a known stable version.
+# boot.kernelPackages = pkgs.linuxPackages; # Example for LTS
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.calebh = {
@@ -82,7 +90,9 @@
     packages = with pkgs; [
       firefox
       git
+      gh
       just
+      nodejs
       vscodium
       chromium
       freecad
@@ -91,6 +101,18 @@
     ]) ++ [
       inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
       inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos
+      # HelixNotes main currently has stale Cargo and pnpm hashes.
+      (inputs.helixnotes.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+        cargoHash = "sha256-HibZ67q9ayNx1k/utdyCbifTRWFggM3DH8caiFfiZyg=";
+        cargoDeps = old.cargoDeps.overrideAttrs (deps: {
+          vendorStaging = deps.vendorStaging.overrideAttrs (_: {
+            outputHash = "sha256-HibZ67q9ayNx1k/utdyCbifTRWFggM3DH8caiFfiZyg=";
+          });
+        });
+        pnpmDeps = old.pnpmDeps.overrideAttrs (_: {
+          outputHash = "sha256-nYNQNGP83dDW7+Agt/EtbxvfgSGtUEDDrhIniUHoDDk=";
+        });
+      }))
     ];
   };
 

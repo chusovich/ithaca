@@ -28,6 +28,8 @@
       url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+    # HelixNotes desktop notes application
+    helixnotes.url = "gitlab:ArkHost/HelixNotes";
     # MCP-NixOS from upstream main branch.
     # Follows the stable nixpkgs input because its overlay currently builds
     # cleanly there; tracking nixos-unstable hits a broken fastmcp_slim path.
