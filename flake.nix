@@ -1,73 +1,60 @@
 {
-  description = "A simple NixOS flake for my laptop";
+  description = "NixOS flake for my workstations";
 
   inputs = {
-    # NixOS official package source, using the nixos-26.05 stable branch
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    # home-manager, used for managing user configuration
+    # Use one unstable package set throughout the configuration.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Unstable Home Manager, kept on the same nixpkgs input.
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
-      # The `follows` keyword in inputs is used for inheritance.
-      # Here, `inputs.nixpkgs` of home-manager is kept consistent with
-      # the `inputs.nixpkgs` of the current flake,
-      # to avoid problems caused by different versions of nixpkgs.
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
-    }; 
-    # Zen browser (kept on its own nixos-unstable input for libgbm compatibility)
+    };
+    # Zen Browser uses the same nixpkgs as the system.
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs = {
         home-manager.follows = "home-manager";
-        nixpkgs.follows = "nixpkgs-unstable";
+        nixpkgs.follows = "nixpkgs";
       };
     };
-    # Unstable nixpkgs for select packages that need newer versions
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    # OpenCode from upstream dev branch
-    opencode = {
-      url = "github:anomalyco/opencode";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
     # HelixNotes desktop notes application
-    helixnotes.url = "gitlab:ArkHost/HelixNotes";
-    # MCP-NixOS from upstream main branch.
-    # Follows the stable nixpkgs input because its overlay currently builds
-    # cleanly there; tracking nixos-unstable hits a broken fastmcp_slim path.
-    mcp-nixos = {
-      url = "github:utensils/mcp-nixos";
-      inputs.nixpkgs.follows = "nixpkgs";
+    helixnotes = {
+      url = "gitlab:ArkHost/HelixNotes";
+ #     inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = inputs@{ nixpkgs, home-manager, ... }:
   let
     system = "x86_64-linux";
-    pkgs-unstable = import inputs.nixpkgs-unstable {
+    helixnotesOverlay = _final: _prev: {
+      # Current upstream has stale Cargo and pnpm hashes.
+      helixnotes = inputs.helixnotes.packages.${system}.default.overrideAttrs (old: {
+        cargoHash = "sha256-HibZ67q9ayNx1k/utdyCbifTRWFggM3DH8caiFfiZyg=";
+        cargoDeps = old.cargoDeps.overrideAttrs (deps: {
+          vendorStaging = deps.vendorStaging.overrideAttrs (_: {
+            outputHash = "sha256-HibZ67q9ayNx1k/utdyCbifTRWFggM3DH8caiFfiZyg=";
+          });
+        });
+        pnpmDeps = old.pnpmDeps.overrideAttrs (_: {
+          outputHash = "sha256-nYNQNGP83dDW7+Agt/EtbxvfgSGtUEDDrhIniUHoDDk=";
+        });
+      });
+    };
+
+    mkSystem = configuration: nixpkgs.lib.nixosSystem {
       inherit system;
-      config.allowUnfree = true;
+      specialArgs = { inherit inputs; };
+      modules = [
+        configuration
+        home-manager.nixosModules.home-manager
+#        { nixpkgs.overlays = [ helixnotesOverlay ]; }
+      ];
     };
   in {
     nixosConfigurations = {
-      odysseus = nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = { inherit pkgs-unstable inputs; };
-        modules = [
-          ./configuration.nix
-
-          # make home-manager as a module of nixos
-          # so that home-manager configuration will be deployed automatically when executing `nixos-rebuild switch`
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs; };
-
-            home-manager.users.calebh = import ./home.nix;
-
-            # Optionally, use home-manager.extraSpecialArgs to pass arguments to home.nix
-          }
-        ];
-      };
+      odysseus = mkSystem ./hosts/odysseus/configuration.nix;
+      telemachus = mkSystem ./hosts/telemachus/configuration.nix;
     };
   };
 }

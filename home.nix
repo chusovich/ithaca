@@ -5,6 +5,7 @@
     inputs.zen-browser.homeModules.beta
     # or inputs.zen-browser.homeModules.twilight
     # or inputs.zen-browser.homeModules.twilight-official
+    ./modules/home/helixnotes.nix
   ];
 
   programs.zen-browser.enable = true;
@@ -12,6 +13,19 @@
   # Set home directory and username
   home.username = "calebh";
   home.homeDirectory = "/home/calebh";
+
+  home.packages = with pkgs; [
+    firefox
+    git
+    gh
+    just
+    vscodium
+    chromium
+    freecad
+    kicad
+    obsidian
+    helixnotes
+  ];
 
   # Helix
   programs.helix = {
